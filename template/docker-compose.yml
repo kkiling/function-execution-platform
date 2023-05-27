@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  script-runner:
+    image: function-execute-platform/python_calculator:latest
+    read_only: true
+    tmpfs:
+      - /tmp:mode=770,size=1024k,uid=200,gid=10000
+    environment:
+      - INPUT_DATA={"first":1,"second":24}
+      - PARAMETERS={"type":"sum","coeff":3}
+      - EXECUTION_ID=223372036854775807
+      - BOOTSTRAP_SERVERS=yarus.lan:9092,yarus.lan:9093
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 50M
+        reservations:
+          cpus: '0.25'
+          memory: 20M

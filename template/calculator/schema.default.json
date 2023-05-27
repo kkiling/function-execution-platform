@@ -1,0 +1,47 @@
+{
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "first": {
+                "type": "number"
+            },
+            "second": {
+                "type": "number"
+            }
+        },
+        "required": [
+            "first",
+            "second"
+        ]
+    },
+    "output_shema": {
+        "type": "object",
+        "properties": {
+            "summ": {
+                "type": "number"
+            }
+        },
+        "required": [
+            "result"
+        ]
+    },
+    "parameters_schema": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "enum": [
+                    "sum",
+                    "multi",
+                    "division"
+                ]
+            },
+            "coeff": {
+                "type": "number"
+            }
+        },
+        "required": [
+            "type"
+        ]
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "name": "calculator",
+    "language": "python",
+    "version": "1.0.2",
+    "description": "Cкрипт показывающий возможности работы function-execution-platform",
+    "copyFiles": [
+        "handler.py",
+        "readme.md",
+        "schema.default.json"
+    ],
+    "forbiddenFileNames": [
+        "main.py",
+        "package.json",
+        "requirements.txt"
+    ],
+    "readOnlyFile": [
+        "readme.md",
+        "schema.default.json"
+    ]
+}
