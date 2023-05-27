@@ -6,8 +6,8 @@ import (
 	"github.com/kkiling/function-execution-platform/api/internal/config"
 	"github.com/kkiling/function-execution-platform/api/internal/factory/factory_impl"
 	"github.com/kkiling/function-execution-platform/api/pkg/logging"
-	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func init() {
@@ -29,11 +29,16 @@ func main() {
 
 	fact, err := factory_impl.NewSingletonFactory(ctx, *configFile)
 	if err != nil {
-		panic(errors.Wrap(err, "fail create factory"))
+		log.Fatal().Err(err).Msgf("fail create factory")
 	}
 
-	err = fact.CreateScopeFactory().GetTemplateService().InitBaseTemplate(ctx)
+	err = fact.CreateScopeFactory().GetTemplateService().InitBaseTemplates(ctx)
 	if err != nil {
-		panic(errors.Wrap(err, "fail init base template"))
+		log.Fatal().Err(err).Msgf("fail init base template")
+	}
+
+	err = fact.CreateScopeFactory().GetTemplateService().LoadGitTemplates(ctx, "git@github.com:kkiling/function-template.git", "main")
+	if err != nil {
+		log.Fatal().Err(err).Msgf("fail init base template")
 	}
 }

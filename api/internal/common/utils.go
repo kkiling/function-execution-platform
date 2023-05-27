@@ -10,3 +10,9 @@ func Close(c io.Closer) {
 		log.Fatal().Err(err).Msgf("fail close")
 	}
 }
+
+func LogErr(err error, msg string) {
+	if err != nil {
+		log.Fatal().Err(err).Msgf(msg)
+	}
+}

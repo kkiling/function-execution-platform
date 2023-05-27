@@ -12,13 +12,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/rs/zerolog/log"
 	"io"
-	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
 const (
-	rootPath    = "../template/"
+	rootPath1   = "../template/"
 	packageFile = "package.json"
 )
 
@@ -46,9 +46,9 @@ func (t TemplateService) loadDefaultContainerParams() model.ContainerParams {
 	}
 }
 
-func (t TemplateService) loadPackagePaths() ([]string, error) {
+func (t TemplateService) loadPackagePaths(dir string) ([]string, error) {
 	packagePaths := make([]string, 0)
-	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func (t TemplateService) loadTemplateFiles(dir string) ([]model.TemplateFile, er
 		if err != nil {
 			return err
 		}
-		bodyBytes, err := ioutil.ReadFile(path)
+		bodyBytes, err := os.ReadFile(path)
 		if err != nil {
 			return err
 		}
@@ -141,10 +141,8 @@ func newVersionGreaterThanOldVersion(oldVersion, newVersion string) (bool, error
 	return newV.GreaterThan(oldV), nil
 }
 
-func (t TemplateService) InitBaseTemplate(ctx context.Context) error {
-	log.Info().Msg("load default template")
-
-	packagePaths, err := t.loadPackagePaths()
+func (t TemplateService) loadTemplatesFromDir(ctx context.Context, dir string) error {
+	packagePaths, err := t.loadPackagePaths(dir)
 	if err != nil {
 		return service.MakeRuntimeWrapErr(err, "fail load packages")
 	}
@@ -187,4 +185,40 @@ func (t TemplateService) InitBaseTemplate(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (t TemplateService) InitBaseTemplates(ctx context.Context) error {
+	log.Info().Msg("load default template")
+	return t.loadTemplatesFromDir(ctx, rootPath1)
+}
+
+func (t TemplateService) LoadGitTemplates(ctx context.Context, gitUrl, branch string) error {
+	dir, err := os.MkdirTemp("", "clone_template_functions")
+	if err != nil {
+		return service.MakeRuntimeWrapErr(err, "fail create temp dir")
+	}
+	// defer os.RemoveAll(dir)
+
+	keyPath := dir + "/id_rsa"
+	pk := t.fact.GetConfig().Git.PrivateKey
+	err = os.WriteFile(keyPath, []byte(pk), 0600)
+	if err != nil {
+		return service.MakeRuntimeWrapErr(err, "fail save private key")
+	}
+
+	dir += "/repo"
+	cmd := exec.Command("git", "clone", gitUrl, dir)
+	cmd.Env = append(os.Environ(), "GIT_SSH_COMMAND=ssh -i "+keyPath+" -o IdentitiesOnly=yes -F /dev/null")
+	err = cmd.Run()
+	if err != nil {
+		return service.MakeRuntimeWrapErr(err, "fail clone git url")
+	}
+
+	cmd = exec.Command("git", "-C", dir, "checkout", branch)
+	err = cmd.Run()
+	if err != nil {
+		return service.MakeRuntimeWrapErr(err, "fail checkout branch")
+	}
+
+	return t.loadTemplatesFromDir(ctx, dir)
 }

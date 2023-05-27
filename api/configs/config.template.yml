@@ -2,6 +2,8 @@ machine_id: 45000
 http_server:
   web_port: 8080
   api_key: "super_secret_123"
+git:
+  private_key: ""
 mongo:
   uri: mongodb://root:root@localhost:27017
   database: scripts

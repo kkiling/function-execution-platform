@@ -3,5 +3,6 @@ package service
 import "context"
 
 type ITemplateService interface {
-	InitBaseTemplate(ctx context.Context) error
+	InitBaseTemplates(ctx context.Context) error
+	LoadGitTemplates(ctx context.Context, gitUrl, branch string) error
 }
